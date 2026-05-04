@@ -1,66 +1,56 @@
 import streamlit as st
+import random
 
-# إعدادات الصفحة
-st.set_page_config(page_title="Assoumi Tech 🚀", page_icon="💻", layout="wide")
+# إعدادات الواجهة
+st.set_page_config(page_title="تحدي الذكاء | Assoumi", page_icon="🧠")
 
-# تصميم CSS احترافي (خلفية سوداء مع تأثيرات ضوئية)
 st.markdown("""
     <style>
-    .stApp {
-        background-color: #0e1117;
-        color: #ffffff;
-    }
-    .main-title {
-        font-size: 50px;
-        font-weight: bold;
+    .stApp { background-color: #050505; color: #00ffcc; }
+    .status-box { 
+        padding: 20px; 
+        border-radius: 10px; 
+        border: 2px solid #00ffcc;
         text-align: center;
-        background: linear-gradient(to right, #ff4b2b, #ff416c);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        margin-bottom: 30px;
-    }
-    .welcome-card {
-        background-color: #1e2130;
-        padding: 20px;
-        border-radius: 15px;
-        border-left: 5px solid #ff4b2b;
-        box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
+        font-size: 24px;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# العنوان الرئيسي
-st.markdown('<h1 class="main-title">Assoumi Tech 🚀💻</h1>', unsafe_allow_html=True)
+st.title("🧠 تحدي ذكاء المبرمج أسومي")
+st.write("لقد اخترتُ رقماً سرياً بين **1 و 100**. هل ذكاؤك يكفي لمعرفته؟")
 
-# تبويبات التنقل
-tab1, tab2, tab3 = st.tabs(["🏠 الرئيسية", "🎮 مشاريعي", "📬 تواصل معي"])
+# تهيئة اللعبة
+if 'secret_number' not in st.session_state:
+    st.session_state.secret_number = random.randint(1, 100)
+    st.session_state.attempts = 0
 
-with tab1:
-    col1, col2 = st.columns([2, 1])
-    with col1:
-        st.markdown("""
-        <div class="welcome-card">
-        <h3>مرحباً بك في عالمي الرقمي 🇩🇿</h3>
-        <p>أنا <b>أسومي</b>، مبرمج من الجزائر أتحدى المستحيل بـ 2 جيجا رام.</p>
-        <p>هدفي هو تحويل الأفكار إلى واقع برمجي مذهل.</p>
+# مدخلات اللاعب
+guess = st.number_input("أدخل تخمينك الآن:", min_value=1, max_value=100, step=1)
+
+if st.button('تحقق من النتيجة 🚀'):
+    st.session_state.attempts += 1
+    
+    if guess < st.session_state.secret_number:
+        st.warning("📈 الرقم السري **أكبر** من ذلك! حاول مجدداً.")
+    elif guess > st.session_state.secret_number:
+        st.warning("📉 الرقم السري **أصغر** من ذلك! حاول مجدداً.")
+    else:
+        st.balloons()
+        st.markdown(f"""
+        <div class="status-box">
+        🎊 مذهل! أنت عبقري! 🎊<br>
+        لقد عرفت الرقم {st.session_state.secret_number}<br>
+        في {st.session_state.attempts} محاولات فقط!
         </div>
         """, unsafe_allow_html=True)
-    with col2:
-        # صورة رمزية (أفاتار مبرمج)
-        st.image("https://dicebear.com", width=150)
+        
+        if st.button('لعب مرة أخرى 🔄'):
+            del st.session_state.secret_number
+            st.rerun()
 
-with tab2:
-    st.header("🛠️ مختبر الابتكار")
-    st.write("هنا ستظهر ألعابي وتطبيقاتي التعليمية قريباً...")
-    st.progress(40, text="جاري العمل على اللعبة الأولى 🎮")
-    st.info("انتظروا لعبة بايثون القادمة قريباً على هذا الموقع!")
-
-with tab3:
-    st.header("🤝 لنتواصل")
-    st.write("إذا كنت من فريق ASUS أو مهتماً بالتعاون، أنا بانتظارك:")
-    st.link_button("زوروا قناتي على يوتيوب 🎥", "https://youtube.com")
-    st.button("أرسل رسالة سريعة 📩")
-
-st.markdown("---")
-st.caption("صُنع بكل فخر بواسطة AssoumiDev 🇩🇿 | 2024")
+# معلومات جانبية
+st.sidebar.title("📊 إحصائيات اللعبة")
+st.sidebar.write(f"عدد المحاولات الحالية: {st.session_state.attempts}")
+st.sidebar.info("هذه اللعبة مبرمجة لتعمل بأقل استهلاك للذاكرة (تحسين لـ 2GB RAM)")
 
