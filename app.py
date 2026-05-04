@@ -1,76 +1,95 @@
 import streamlit as st
 import random
 
-# إعدادات الصفحة الاحترافية
-st.set_page_config(page_title="تحدي الأذكياء | Assoumi Dev", page_icon="🧩")
+# إعدادات الصفحة
+st.set_page_config(page_title="سيد الألغاز العالمي | Assoumi", page_icon="🧩")
 
-# تصميم CSS جذاب
+# تصميم احترافي متقدم
 st.markdown("""
     <style>
     .stApp { background-color: #0f172a; color: #38bdf8; }
-    .word-box { 
-        font-size: 40px; font-weight: bold; letter-spacing: 10px; 
-        text-align: center; margin: 20px; color: #f1f5f9;
+    .riddle-box { 
+        background-color: #1e293b; padding: 25px; border-radius: 15px; 
+        border-right: 5px solid #e94560; text-align: center; font-size: 22px;
+        margin-bottom: 20px; color: white;
     }
-    .status { text-align: center; font-size: 20px; }
+    .review-card {
+        background-color: #334155; padding: 15px; border-radius: 10px;
+        margin-bottom: 10px; border: 1px solid #ef4444;
+    }
     </style>
     """, unsafe_allow_html=True)
 
-st.title("🧩 تحدي ذكاء العباقرة")
+st.title("🌍 تحدي ألغاز العالم الذكي")
 
-# اختيار المستوى
-level = st.sidebar.selectbox("اختر مستوى الصعوبة:", ["سهل (فواكه)", "متوسط (دول)", "صعب (برمجة)"])
+# قاعدة بيانات ضخمة للألغاز
+if 'all_riddles' not in st.session_state:
+    st.session_state.all_riddles = [
+        {"q": "خريطة بلا مدن، جبال بلا أشجار، وبحار بلا سمك؟", "a": "الخريطة"},
+        {"q": "ما هو الشيء الذي يكسر بمجرد نطق اسمه؟", "a": "الصمت"},
+        {"q": "يمشي بلا أرجل ويدخل الأذن بلا استئذان؟", "a": "الصوت"},
+        {"q": "شيء يوجد في وسط باريس؟", "a": "حرف الراء"},
+        {"q": "ما هو الشيء الذي له أسنان ولا يعض؟", "a": "المشط"},
+        {"q": "كلمة يبطل معناها إذا نطقنا بها؟", "a": "الصمت"},
+        {"q": "سلم لا يصعد عليه أحد؟", "a": "سلم الرواتب"},
+        {"q": "يسمع بلا أذن ويتكلم بلا لسان؟", "a": "الهاتف"},
+        {"q": "له عين واحدة ولكنه لا يرى؟", "a": "الإبرة"},
+        {"q": "يتحرك دائماً حولك لكنك لا تراه؟", "a": "الهواء"},
+        {"q": "ما هو الشيء الذي يحوي مدناً بلا ناس؟", "a": "الخريطة"},
+        {"q": "كلما زاد نقص، فما هو؟", "a": "العمر"},
+        {"q": "ما هو الشيء الذي يكتب ولا يقرأ؟", "a": "القلم"},
+        {"q": "ابن أمك وابن أبيك، وليس بأختك ولا بأخيك؟", "a": "أنت"},
+        {"q": "ما هو الشيء الذي نبضه بلا قلب؟", "a": "الساعة"}
+    ]
 
-# بيانات اللعبة
-data = {
-    "سهل (فواكه)": ["تفاح", "موز", "فراولة", "بطيخ", "برتقال"],
-    "متوسط (دول)": ["الجزائر", "فلسطين", "تونس", "موريتانيا", "مصر"],
-    "صعب (برمجة)": ["بايثون", "خوارزمية", "مصفوفة", "متغيرات", "دالة"]
-}
+# تهيئة حالة اللعبة
+if 'lives' not in st.session_state:
+    st.session_state.lives = 3
+    st.session_state.score = 0
+    st.session_state.wrong_answers = [] # قائمة لتخزين الأخطاء
+    st.session_state.current_riddle = random.choice(st.session_state.all_riddles)
+    st.session_state.game_over = False
 
-# تهيئة اللعبة
-if 'secret_word' not in st.session_state or st.sidebar.button("لعبة جديدة 🔄"):
-    st.session_state.secret_word = random.choice(data[level])
-    st.session_state.guessed_letters = []
-    st.session_state.attempts = 6
+# شاشة الخسارة والمراجعة
+if st.session_state.lives <= 0:
+    st.error("💔 انتهت المحاولات! إليك الألغاز التي تعثرت فيها:")
+    for item in st.session_state.wrong_answers:
+        st.markdown(f"""
+        <div class="review-card">
+            <b>اللغز:</b> {item['q']}<br>
+            <span style="color: #4ade80;"><b>الإجابة الصحيحة:</b> {item['a']}</span>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    if st.button("🔄 حاول من جديد بنشاط"):
+        st.session_state.lives = 3
+        st.session_state.score = 0
+        st.session_state.wrong_answers = []
+        st.session_state.current_riddle = random.choice(st.session_state.all_riddles)
+        st.rerun()
 
-# عرض الكلمة مشفرة
-display_word = ""
-for char in st.session_state.secret_word:
-    if char in st.session_state.guessed_letters:
-        display_word += char
-    else:
-        display_word += "_"
+# شاشة اللعب
+else:
+    col1, col2 = st.columns(2)
+    col1.metric("❤️ القلوب المتبقية", st.session_state.lives)
+    col2.metric("🏆 رصيد الإجابات", st.session_state.score)
 
-st.markdown(f'<div class="word-box">{display_word}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="riddle-box">{st.session_state.current_riddle["q"]}</div>', unsafe_allow_html=True)
 
-# إدخال الحروف
-col1, col2 = st.columns([2, 1])
-with col1:
-    letter = st.text_input("خمن حرفاً واحداً:", max_chars=1).strip()
-with col2:
-    if st.button("تحقق ✅") and letter:
-        if letter in st.session_state.guessed_letters:
-            st.warning("لقد اخترت هذا الحرف من قبل!")
-        elif letter in st.session_state.secret_word:
-            st.session_state.guessed_letters.append(letter)
-            st.success("أحسنت! حرف صحيح.")
+    user_ans = st.text_input("اكتب إجابتك هنا وكن دقيقاً:")
+
+    if st.button("تحقق ✅"):
+        if user_ans.strip() == st.session_state.current_riddle["a"]:
+            st.balloons()
+            st.success("إجابة صحيحة! ننتقل للغز التالي...")
+            st.session_state.score += 1
+            st.session_state.current_riddle = random.choice(st.session_state.all_riddles)
+            st.rerun()
         else:
-            st.session_state.attempts -= 1
-            st.error(f"خطأ! تبقى لك {st.session_state.attempts} محاولات.")
-
-# التحقق من الفوز أو الخسارة
-if "_" not in display_word:
-    st.balloons()
-    st.success(f"🎊 عبقري! الكلمة هي: {st.session_state.secret_word}")
-    if st.button("العب مرة أخرى"):
-        del st.session_state.secret_word
-        st.rerun()
-
-if st.session_state.attempts <= 0:
-    st.error(f"💔 للأسف خسرنا! الكلمة كانت: {st.session_state.secret_word}")
-    if st.button("حاول مجدداً"):
-        del st.session_state.secret_word
-        st.rerun()
-
-st.sidebar.write(f"المحاولات المتبقية: {'❤️' * st.session_state.attempts}")
+            st.session_state.lives -= 1
+            # حفظ اللغز في قائمة الأخطاء قبل الانتقال
+            st.session_state.wrong_answers.append(st.session_state.current_riddle)
+            if st.session_state.lives > 0:
+                st.warning(f"خطأ! فقدت قلباً. تبقى لك {st.session_state.lives}")
+                st.session_state.current_riddle = random.choice(st.session_state.all_riddles)
+            st.rerun()
